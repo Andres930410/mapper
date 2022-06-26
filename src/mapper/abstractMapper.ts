@@ -1,4 +1,5 @@
-import { PropType, Translator } from '@/mapper/translator';
+import { Translator } from '@/mapper/translator';
+import { Flatten, PropType } from '@/utility';
 
 export abstract class AbstractMapper<TModel, TDto> {
   private readonly _translator: Translator<TModel, TDto>;
@@ -9,10 +10,13 @@ export abstract class AbstractMapper<TModel, TDto> {
     this._data = data;
   }
 
-  addMapper<TOtherModel, TOtherDto>(
-    key: keyof TDto,
-    keyModel: keyof TModel,
-    mapper: AbstractMapper<TOtherModel, TOtherDto>,
+  addMapper<Key extends string & keyof TModel, KeyDto extends string & keyof TDto>(
+    key: KeyDto,
+    keyModel: Key,
+    mapper: AbstractMapper<
+      Flatten<PropType<TModel, Key>>,
+      Flatten<PropType<TDto, KeyDto>>
+    >,
   ) {
     this._translator[key] = {
       key: keyModel,
@@ -20,9 +24,9 @@ export abstract class AbstractMapper<TModel, TDto> {
     };
   }
 
-  addMapping(
-    key: keyof TDto,
-    transform: (data: Partial<TModel>) => PropType<TDto, keyof TDto>,
+  addMapping<Key extends string & keyof TDto>(
+    key: Key,
+    transform: (data: Partial<TModel>) => PropType<TDto, Key>,
   ) {
     this._translator[key] = {
       key: '',
@@ -47,11 +51,15 @@ export abstract class AbstractMapper<TModel, TDto> {
       if (typeof this._translator[key].mapper === 'function') {
         result[key] = (this._translator[key].mapper as Function)({
           ...data,
-        }) as NonNullable<PropType<TDto, keyof TDto>>;
+        }) as PropType<TDto, keyof TDto>;
       } else if (this._translator[key]) {
-        const mapper = this._translator[key].mapper as AbstractMapper<unknown, unknown>;
-        mapper._data = data[this._translator[key].key as keyof TModel];
-        result[key] = mapper.transform() as NonNullable<PropType<TDto, keyof TDto>>;
+        const keyModel = this._translator[key].key as keyof TModel;
+        const mapper = this._translator[key].mapper as AbstractMapper<
+          PropType<TModel, keyof TModel>,
+          PropType<TDto, keyof TDto>
+        >;
+        mapper._data = data[keyModel];
+        result[key] = mapper.transform() as PropType<TDto, keyof TDto>;
       }
     });
     return result;

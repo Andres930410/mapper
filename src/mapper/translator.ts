@@ -1,11 +1,10 @@
 import { AbstractMapper } from '@/mapper/abstractMapper';
-
-export type PropType<TObj, TKey extends keyof TObj> = TObj[TKey];
+import { PropType } from '@/utility';
 
 export type Translator<TModel, TDto> = {
   [Property in keyof TDto]:
     | {
-        key: keyof TModel;
+        key: string & keyof TModel;
         mapper: AbstractMapper<unknown, unknown>;
       }
     | {
