@@ -3,14 +3,12 @@ import { Flatten, PropType } from '@/utility';
 
 export abstract class AbstractMapper<TModel, TDto> {
   private readonly _translator: Translator<TModel, TDto>;
-  private _data: TModel | TModel[];
 
-  constructor(data: TModel | TModel[]) {
+  protected constructor() {
     this._translator = {} as Translator<TModel, TDto>;
-    this._data = data;
   }
 
-  addMapper<Key extends string & keyof TModel, KeyDto extends string & keyof TDto>(
+  public addMapper<Key extends string & keyof TModel, KeyDto extends string & keyof TDto>(
     key: KeyDto,
     keyModel: Key,
     mapper: AbstractMapper<
@@ -24,7 +22,7 @@ export abstract class AbstractMapper<TModel, TDto> {
     };
   }
 
-  addMapping<Key extends string & keyof TDto>(
+  public addMapping<Key extends string & keyof TDto>(
     key: Key,
     transform: (data: Partial<TModel>) => PropType<TDto, Key>,
   ) {
@@ -34,17 +32,14 @@ export abstract class AbstractMapper<TModel, TDto> {
     };
   }
 
-  transform(): TDto | TDto[] {
-    if (Array.isArray(this._data)) {
-      return this._data.map((x) => {
-        return this.transformItem(x);
-      });
-    } else {
-      return this.transformItem(this._data);
+  public transform<T extends TModel | TModel[]>(data: T): T extends TModel[] ? TDto[] : TDto {
+    if (Array.isArray(data)) {
+      return data.map(it => this.transformItem(it)) as T extends TModel[] ? TDto[] : TDto;
     }
+    return this.transformItem(data as TModel) as T extends TModel[] ? TDto[] : TDto;
   }
 
-  private transformItem(data: TModel): TDto {
+  private transformItem<T extends TModel>(data: T): TDto {
     const result = {} as TDto;
     (Object.keys(this._translator) as (keyof TDto)[]).forEach((key) => {
       if (typeof this._translator[key].mapper === 'function') {
@@ -57,8 +52,7 @@ export abstract class AbstractMapper<TModel, TDto> {
           PropType<TModel, keyof TModel>,
           PropType<TDto, keyof TDto>
         >;
-        mapper._data = data[keyModel];
-        result[key] = mapper.transform() as PropType<TDto, keyof TDto>;
+        result[key] = mapper.transform(data[keyModel]) as PropType<TDto, keyof TDto>;
       }
     });
     return result;
