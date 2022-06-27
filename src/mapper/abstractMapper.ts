@@ -31,9 +31,7 @@ export abstract class AbstractMapper<TModel, TDto> {
     };
   }
 
-  public removeMapping<Key extends keyof TDto>(
-    key: Key
-  ) {
+  public removeMapping<Key extends keyof TDto>(key: Key) {
     this._translator[key] = undefined;
   }
 
@@ -51,7 +49,7 @@ export abstract class AbstractMapper<TModel, TDto> {
   private transformItem(data: TModel): TDto {
     const result = {} as TDto;
     (Object.keys(this._translator) as (keyof TDto)[]).forEach((key) => {
-      if(!this._translator[key]) return;
+      if (!this._translator[key]) return;
       if (typeof this._translator[key]?.mapper === 'function') {
         result[key] = (this._translator[key]?.mapper as Function)({
           ...data,

@@ -309,8 +309,8 @@ describe('Mapper testing', () => {
         mapper.removeMapping('email');
         const result: UserDtoWithUsername = mapper.transform(user);
         expect(result).toEqual({
-          "fullName": "Andres Gutierrez",
-          "username": "agutierrezt",
+          fullName: 'Andres Gutierrez',
+          username: 'agutierrezt',
         });
         expect(result.email).toBe(undefined);
         expect(result.fullName).toBe(`${user.name} ${user.lastName}`);
@@ -430,7 +430,8 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto = mapper.transform(userWithAddress);
+        const result: UserWithAddressWithoutNestingDto =
+          mapper.transform(userWithAddress);
         expect(result).toEqual(userWithAddressTwoDto);
         expect(result.address).toEqual(userWithAddressTwoDto.address);
       });
@@ -447,7 +448,8 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto[] = mapper.transform(usersWithAddress);
+        const result: UserWithAddressWithoutNestingDto[] =
+          mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressTwoDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressTwoDto.address);
@@ -562,7 +564,8 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserWithAddressesWithoutNestingDto = mapper.transform(userWithAddresses);
+        const result: UserWithAddressesWithoutNestingDto =
+          mapper.transform(userWithAddresses);
         expect(result).toEqual(userWithAddressesTwoDto);
         expect(result.addresses).toEqual(userWithAddressesTwoDto.addresses);
       });
@@ -579,7 +582,8 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto[] = mapper.transform(usersWithAddress);
+        const result: UserWithAddressWithoutNestingDto[] =
+          mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressTwoDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressTwoDto.address);
