@@ -1,10 +1,12 @@
 ## Table of Contents
 - [Mapper](#mapper)
-  - [Installing](#installing)
-  - [How to use](#how-to-use)
-  - [Example](#example)
+- [Installing](#installing)
+- [How to use](#how-to-use)
+- [Example](#example)
     - [For Object](#for-object)
     - [For Array](#for-array)
+- [Changelog](#changelog)
+- [Acknowledgments](#acknowledgments)
 
 # Mapper
 
@@ -12,7 +14,7 @@ Library used to map objects, using functions and mappers, this library is simila
 
 The library use generics in order to have a strong typing of which properties can be transformed and the types of each property.
 
-## Installing
+# Installing
 
 Using npm:
 
@@ -20,7 +22,7 @@ Using npm:
 $ npm install @agutierrezt9410/mapper
 ```
 
-## How to use
+# How to use
 
 in order to use the library you need to create a new mapper where the types used for mapping are indicate as follow:
 
@@ -46,6 +48,12 @@ mapper.addMapping("toOtherModelProperty", ({args1,args2}): propertyType => {
 mapper.addMapper("toModelProper","fromModelProperty", otherMapper);
 ```
 
+Also some mapping and mappers can removed or ignore in the mapping process as follow:
+
+```ts
+mapper.removeMapping("toModelProper");
+```
+
 After your mapper is configured you can get the resulting object using the transform method in the main mapper the the return type of the mapper is **toModel | toModel[]** so remember to cast to the correct type based on the data to transform.
 
 ```ts
@@ -55,7 +63,7 @@ cons result = mapper.transform() as ToModel
 const result = mapper.transform() as ToModel[]
 ```
 
-## Example
+# Example
 
 According the following models with the following data, we present an use case of the mapper, next we show a POO design, which will be used as **FromModel**.
 
@@ -135,7 +143,7 @@ interface UserAddressDto extends User {
 
 ### For Object
 ```ts
-const mapper = new Mapper<UserAddress, UserAddressDto>(data);
+const mapper = new Mapper<UserAddress, UserAddressDto>();
 mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
 })
@@ -154,7 +162,7 @@ addressMapper.addMapper("addresses","addresses",addressMapper);
 //     }
 //   })
 // })
-const result = mapper.transform() as UserAddressDto
+const result: UserAddressDto = mapper.transform(data)
 console.log(result);
 //{
 //   "fullName": "Name1 Lastname 1",
@@ -168,7 +176,7 @@ console.log(result);
 
 ### For Array
 ```ts
-const mapper = new Mapper<UserAddress, UserAddressDto>(data);
+const mapper = new Mapper<UserAddress, UserAddressDto>();
 mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
 })
@@ -187,7 +195,7 @@ addressMapper.addMapper("addresses","addresses",addressMapper);
 //     }
 //   })
 // })
-const result = mapper.transform() as UserAddressDto[]
+const result: UserAddressDto[] = mapper.transform(data)
 console.log(result);
 //[{
 //   "fullName": "Name1 Lastname 1",
@@ -198,3 +206,10 @@ console.log(result);
 //   ]
 //}]
 ```
+
+# Changelog
+- 0.0.1: Initial version
+- 0.0.2: Reusable mapper, type safety for return type on the transform function and remove mapping.
+
+# Acknowledgments
+I would like to thanks Trammel May that after a small discussion he pointed me some problems that my package had, which was related to return type of the transform function and reusability of the mapper.
