@@ -186,27 +186,32 @@ addressMapper.addMapping("text", ({ address, city, country }): string => {
   return `${address}, ${city}, ${country}`;
 });
 
-mapper.addMapper("addresses","addresses",AddressDto,addressMapper);
-// mapper.addMapping("addresses", ({addresses}): AddressDto => {
-//   return (addresses ?? []).map(x => {
-//     return {
-//       text: `${x.address}, ${x.city}, ${x.country}`
-//     }
-//   })
-// })
-//This function will create a new object using the transformation logic
-const result = mapper.transform(data,UserAddressDto);
-//result instance of UserAddressDto -> true
+mapper.addMapper("addresses", "addresses", AddressDto, addressMapper);
+//  You can also do it this way:
+//  mapper.addMapping("addresses", ({addresses}): AddressDto => {
+//    return (addresses ?? []).map(x => {
+//      return {
+//        text: `${x.address}, ${x.city}, ${x.country}`;
+//      }
+//    });
+//  });
+
+// This function will create a new object using the transformation logic
+// The resulting object will be an instance of UserAddressDto
+const result = mapper.transform(data, UserAddressDto);
+
 console.log(result);
-//{
-//   "fullName": "Name1 Lastname 1",
-//   "email": "email@test.com"
-//   "addresses": [
-//     {text: "Fake address, Fake city, Fake country"},
-//     {text: "another fake address, another fake city, another fake country"},
-//   ]
-//}
-//This function not only will create a new object based on the transformation logic but also check if the properties satisfy with some validations, for instance if the email property is not a valid email, the function will generate an exception.
+//  Console log output:
+//  {
+//    "fullName": "Name1 Lastname 1",
+//    "email": "email@test.com"
+//    "addresses": [
+//      { text: "Fake address, Fake city, Fake country" },
+//      { text: "Another fake address, Another fake city, Another fake country" },
+//    ]
+//  }
+
+// This function will not only create a new object based on the transformation logic but also check if the properties satisfy the validations. For instance if the email property is not a valid email, the function will generate an exception.
 const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
 ```
 
@@ -227,6 +232,7 @@ addressMapper.addMapping("text", ({address,city,country}): string => {
   return `${address}, ${city}, ${country}`
 });
 addressMapper.addMapper("addresses","addresses",addressMapper);
+// You can also do it this way:
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //   return (addresses ?? []).map(x => {
 //     return {
@@ -234,17 +240,23 @@ addressMapper.addMapper("addresses","addresses",addressMapper);
 //     }
 //   })
 // })
+
 const result: UserAddressDto[] = mapper.transform(data);
+
 console.log(result);
-//[{
-//   "fullName": "Name1 Lastname 1",
-//   "email": "email@test.com"
-//   "addresses": [
-//     {text: "Fake address, Fake city, Fake country"},
-//     {text: "another fake address, another fake city, another fake country"},
-//   ]
-//}]
-//The validate function can be used also with array, if any object doesn't satisfy the validaiton the method will generate an exception, indicate the position of the first object into the array which doesn't satisfy the validiations.
+//  Console log output:
+//  [
+//    {
+//      "fullName": "Name1 Lastname 1",
+//      "email": "email@test.com"
+//      "addresses": [
+//        { text: "Fake address, Fake city, Fake country" },
+//        { text: "Another fake address, Another fake city, Another fake country" },
+//      ]
+//    }
+//  ]
+
+// The validate function can be used also with an array, if any object of the objects present in the array doesn't satisfy the validations, then the method will generate an exception and indicate the position of the first object which doesn't satisfy the validations.
 const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
 ```
 
