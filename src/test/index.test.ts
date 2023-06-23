@@ -822,6 +822,11 @@ describe('Mapper testing', () => {
 
   describe('Transform to a class object and validate', () => {
     it('Map object', () => {
+      const data1: User = {
+        name: 'Andres',
+        lastName: 'Gutierrez',
+        email: 'agutierrezt@unal.edu.co',
+      };
       const data: User = {
         name: 'Andres',
         lastName: 'Gutierrez',
@@ -835,6 +840,8 @@ describe('Mapper testing', () => {
         return email ?? '';
       });
       try {
+        const result = mapper.transformAndValidate(data1, UserDto);
+        expect(result.fullName).toBe(`${data1.name} ${data1.lastName}`);
         mapper.transformAndValidate(data, UserDto);
       } catch (e: unknown) {
         expect((e as TransformationError).errors.length).toBe(1);
@@ -867,6 +874,85 @@ describe('Mapper testing', () => {
           `The validation fail in the position 1`,
         );
       }
+    });
+  });
+
+  describe('Context when mapping objects', () => {
+    it('Map object', () => {
+      const address = {
+        address: 'Calle falsa 123',
+        country: 'Colombia',
+        city: 'Bogota',
+      };
+      const data: UserAddress = {
+        name: 'Andres',
+        lastName: 'Gutierrez',
+        email: 'agutierrezt@slabcode.com',
+        address: address,
+      };
+      const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+      mapper.context = {
+        separator: '-',
+      };
+      mapper.addMapping('fullName', ({ name, lastName }): string => {
+        return `${name} ${lastName}`;
+      });
+      mapper.addMapping('email', ({ email }): string => {
+        return email ?? '';
+      });
+      const mapperAddress = new Mapper<Address, AddressDto>();
+      mapperAddress.context = {
+        addressSeparator: '-',
+      };
+      mapperAddress.addMapping('address', (data, ctx) => {
+        const separator = (ctx?.separator ?? '') + (ctx?.addressSeparator ?? '');
+        return `${data.address}${separator}${data.city}${separator}${data.country}`;
+      });
+      mapper.addMapper('address', 'address', AddressDto, mapperAddress);
+
+      const result = mapper.transform(data, UserWithAddressDto);
+      const addressResult = mapperAddress.transform(address, AddressDto);
+      expect(result.address.address).toBe('Calle falsa 123--Bogota--Colombia');
+      expect(addressResult.address).toBe('Calle falsa 123-Bogota-Colombia');
+    });
+
+    it('Map array', () => {
+      const address = {
+        address: 'Calle falsa 123',
+        country: 'Colombia',
+        city: 'Bogota',
+      };
+      const data: UserAddress[] = [
+        {
+          name: 'Andres',
+          lastName: 'Gutierrez',
+          email: 'agutierrezt@slabcode.com',
+          address: address,
+        },
+      ];
+      const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+      mapper.context = {
+        separator: '-',
+      };
+      mapper.addMapping('fullName', ({ name, lastName }): string => {
+        return `${name} ${lastName}`;
+      });
+      mapper.addMapping('email', ({ email }): string => {
+        return email ?? '';
+      });
+      const mapperAddress = new Mapper<Address, AddressDto>();
+      mapperAddress.context = {
+        addressSeparator: '-',
+      };
+      mapperAddress.addMapping('address', (data, ctx) => {
+        const separator = (ctx?.separator ?? '') + (ctx?.addressSeparator ?? '');
+        return `${data.address}${separator}${data.city}${separator}${data.country}`;
+      });
+      mapper.addMapper('address', 'address', AddressDto, mapperAddress);
+      const result = mapper.transform(data, UserWithAddressDto);
+      const addressResult = mapperAddress.transform(address, AddressDto);
+      expect(result[0].address.address).toBe('Calle falsa 123--Bogota--Colombia');
+      expect(addressResult.address).toBe('Calle falsa 123-Bogota-Colombia');
     });
   });
 });

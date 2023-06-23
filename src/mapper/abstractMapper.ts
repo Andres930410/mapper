@@ -30,10 +30,6 @@ export abstract class AbstractMapper<TModel, TDto> {
       Flatten<PropType<TDto, KeyDto>>
     >,
   ) {
-    mapper.context = {
-      ...this.context,
-      ...mapper.context,
-    };
     this._translator[key] = {
       key: keyModel,
       clazz,
@@ -124,11 +120,17 @@ export abstract class AbstractMapper<TModel, TDto> {
           PropType<TModel, keyof TModel>,
           PropType<TDto, keyof TDto>
         >;
+        const originalContext = { ...mapper.context };
+        mapper.context = {
+          ...this.context,
+          ...mapper.context,
+        };
         const clazz = translatorMapper.clazz as ClassConstructor<
           PropType<TDto, keyof TDto>
         >;
         if (data[keyModel] !== undefined)
           result[key] = mapper.transform(data[keyModel], clazz);
+        mapper.context = originalContext;
       }
     });
     return result;

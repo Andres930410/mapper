@@ -10,9 +10,9 @@
 
 # Mapper
 
-Library used to map objects, using functions and mappers, this library is similar to c# library automapper.
+This library used to transform objects using functions and sub-mappers. It is inspired by Automapper, a library written in C#.
 
-The library use generics in order to have a strong typing of which properties can be transformed and the types of each property.
+The library heavily uses generics in order to have a strong typing of which properties can be transformed and which types each property should have, this new version only work with class types.
 
 # Installing
 
@@ -23,64 +23,91 @@ $ npm install @agutierrezt9410/mapper
 ```
 
 # How to use
-
-in order to use the library you need to create a new mapper where the types used for mapping are indicate as follow:
+In order to use the library you need to create a new mapper as follows:
 
 ```ts
-const mapper = new Mapper<FromModel, ToModel>(data);
+const mapper = new Mapper<FromModel, ToModel>();
+```
+
+If you are familiar with object oriented design you can use subclassing in order to create custom mappers which can be reused as follows:
+
+```ts
+class MyCustomMapper extendes Mapper<FromModel, ToModel> {
+    constructor() {
+        super();
+    }
+}
+
+const mapper = new MyCustomMapper();
 ```
 
 Once the mapper is created you can add steps to the mapping process for each property, those instructions can be done using functions or other mappers.
 
 When using functions your method can receive any property from **FromModel** using destructuring syntax.
 
+Each mapper can have additonal contextual information, which can be used to create custom mapping logic, the context of the mapper can be set as follows:
+
 ```ts
-mapper.addMapping("toModelProperty", ({args1,args2}): propertyType => {
-  //Mapping logic
-  return value;
-})
-//For sub mappers you don't have to populate the information to transform.
-//That information would be get from the original data from the main mapper.
-const otherMapper = new Mapper<FromOtherModel, ToOtherModel>();
-mapper.addMapping("toOtherModelProperty", ({args1,args2}): propertyType => {
-  return value;
-})
-mapper.addMapper("toModelProper","fromModelProperty", otherMapper);
+mapper.context = {
+    role: "ADMIN"
+}
 ```
 
-Also some mapping and mappers can removed or ignore in the mapping process as follow:
+The context is always passed to each transformation function as an optional parameter and it can be used in this way:
+
+```ts
+mapper.addMapping("toModelProperty", ({ args1, args2 }, ctx): propertyType => {
+  // Mapping logic
+  if (ctx?.role === 'ADMIN') return '';
+  return value;
+});
+
+const otherMapper = new Mapper<FromOtherModel, ToOtherModel>();
+
+mapper.addMapping("toOtherModelProperty", ({ args1, args2 }): propertyType => {
+  return value;
+});
+mapper.addMapper("toModelProper", "fromModelProperty", ToOtherModel, otherMapper);
+```
+
+It's important to also notice that when a submapper is configured then the context of the sub mapper will be combined with the context of its parent mapper in order to have better contextual information. However, when the mapper is used in isolation then its contextual information will be only the one defined by the mapper itself.
+
+Also some mapping and mappers can be removed during the mapping process as follows:
 
 ```ts
 mapper.removeMapping("toModelProper");
 ```
 
-After your mapper is configured you can get the resulting object using the transform method in the main mapper the the return type of the mapper is **toModel | toModel[]** so remember to cast to the correct type based on the data to transform.
+After your mapper is configured you can get the resulting object using the transform method in the main mapper. This function will return **toModel | toModel[]** based on if you are transforming an object or an array of objects, no casting is needed.
 
 ```ts
-// for getting an object
-cons result = mapper.transform() as ToModel
-// for getting an array
-const result = mapper.transform() as ToModel[]
+// For getting an object
+const data = {}; // Object type defined in mapper declaration
+const result = mapper.transform(data, ToModel);
+
+// For getting an array
+const data = []; // Array of object types defined in mapper declaration
+const result = mapper.transform(data, ToModel);
 ```
 
 # Example
 
-According the following models with the following data, we present an use case of the mapper, next we show a POO design, which will be used as **FromModel**.
+According the following models with the following data, we present an use case of the mapper, next we show a POO design that will be used as **FromModel**:
 
 ```ts
-interface User {
+class User {
   name: string;
   lastName: string;
   email: string
 }
 
-interface Address {
+class Address {
   address: string
   city: string,
   country: string
 }
 
-interface UserAddress extends User {
+class UserAddress extends User {
   addresses: Address[]
 }
 
@@ -100,7 +127,7 @@ const data: UserAddress = {
       country: "another fake country"
     }
   ]
-}
+};
 
 const arrayData: UserAddress[] = [
   {
@@ -120,23 +147,24 @@ const arrayData: UserAddress[] = [
       }
     ]
   }
-]
+];
 
 ```
 
-Next we show a POO design, which will be used as **ToModel**
+Next we show a POO design, which will be used as **ToModel**:
 
 ```ts
-interface UserDto {
+class UserDto {
   fullName: string;
+  @IsEmail() // class transformer decorator
   email: string
 }
 
-interface AddressDto {
+class AddressDto {
   text: string
 }
 
-interface UserAddressDto extends User {
+class UserAddressDto extends User {
   addresses: AddressDto[]
 }
 ```
@@ -144,17 +172,21 @@ interface UserAddressDto extends User {
 ### For Object
 ```ts
 const mapper = new Mapper<UserAddress, UserAddressDto>();
-mapper.addMapping("fullName", ({name, lastName}): string => {
-  return `${name} ${lastName}`
-})
-mapper.addMapping("email", ({email}): string => {
-  return email ?? ""
-})
-const addressMapper = new Mapper<Address ,AddressDto>()
-addressMapper.addMapping("text", ({address,city,country}): string => {
-  return `${address}, ${city}, ${country}`
-})
-addressMapper.addMapper("addresses","addresses",addressMapper);
+
+mapper.addMapping("fullName", ({ name, lastName }): string => {
+  return `${name} ${lastName}`;
+});
+mapper.addMapping("email", ({ email }): string => {
+  return email ?? "";
+});
+
+const addressMapper = new Mapper<Address ,AddressDto>();
+
+addressMapper.addMapping("text", ({ address, city, country }): string => {
+  return `${address}, ${city}, ${country}`;
+});
+
+addressMapper.addMapper("addresses","addresses",AddressDto,addressMapper);
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //   return (addresses ?? []).map(x => {
 //     return {
@@ -162,7 +194,9 @@ addressMapper.addMapper("addresses","addresses",addressMapper);
 //     }
 //   })
 // })
-const result: UserAddressDto = mapper.transform(data)
+//This function will create a new object using the transformation logic
+const result = mapper.transform(data,UserAddressDto);
+//result instance of UserAddressDto -> true
 console.log(result);
 //{
 //   "fullName": "Name1 Lastname 1",
@@ -172,21 +206,26 @@ console.log(result);
 //     {text: "another fake address, another fake city, another fake country"},
 //   ]
 //}
+//This function not only will create a new object based on the transformation logic but also check if the properties satisfy with some validations, for instance if the email property is not a valid email, the function will generate an exception.
+const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
 ```
 
 ### For Array
 ```ts
 const mapper = new Mapper<UserAddress, UserAddressDto>();
+
 mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
-})
+});
 mapper.addMapping("email", ({email}): string => {
   return email ?? ""
-})
-const addressMapper = new Mapper<Address ,AddressDto>()
+});
+
+const addressMapper = new Mapper<Address ,AddressDto>();
+
 addressMapper.addMapping("text", ({address,city,country}): string => {
   return `${address}, ${city}, ${country}`
-})
+});
 addressMapper.addMapper("addresses","addresses",addressMapper);
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //   return (addresses ?? []).map(x => {
@@ -195,7 +234,7 @@ addressMapper.addMapper("addresses","addresses",addressMapper);
 //     }
 //   })
 // })
-const result: UserAddressDto[] = mapper.transform(data)
+const result: UserAddressDto[] = mapper.transform(data);
 console.log(result);
 //[{
 //   "fullName": "Name1 Lastname 1",
@@ -205,11 +244,18 @@ console.log(result);
 //     {text: "another fake address, another fake city, another fake country"},
 //   ]
 //}]
+//The validate function can be used also with array, if any object doesn't satisfy the validaiton the method will generate an exception, indicate the position of the first object into the array which doesn't satisfy the validiations.
+const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
 ```
 
 # Changelog
 - 0.0.1: Initial version
 - 0.0.2: Reusable mapper, type safety for return type on the transform function and remove mapping.
+- 1.0.0: Now the mapper uses class transformer and class validator for validations and to guarantee that class types are returned instead of plain JavaScript objects.
+    - Added:
+        - Context can be added to the mappers, the context will be passed to each transformation function and it could be used for adding custom logic into the mappings.
+        - Use class transformer for returning an specific class type instead of a plain javascript object.
+        - New method for not only transforming but also validating if the information satisfies with some validation, this feature uses class validator.
 
 # Acknowledgments
-I would like to thanks Trammel May that after a small discussion he pointed me some problems that my package had, which was related to return type of the transform function and reusability of the mapper.
+I would like to thanks Trammel May. After a small discussion he pointed to me some problems that my library could have, those problems were addressed and solved.
