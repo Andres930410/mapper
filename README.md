@@ -186,7 +186,7 @@ addressMapper.addMapping("text", ({ address, city, country }): string => {
   return `${address}, ${city}, ${country}`;
 });
 
-addressMapper.addMapper("addresses","addresses",AddressDto,addressMapper);
+mapper.addMapper("addresses","addresses",AddressDto,addressMapper);
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //   return (addresses ?? []).map(x => {
 //     return {
