@@ -231,23 +231,20 @@ describe('Mapper testing', () => {
   describe('Mapping without nesting', () => {
     describe('Ignore properties', () => {
       it('Map object', () => {
-        const mapper = new Mapper<User, UserWithoutEmailDto>();
+        const mapper = new Mapper<User, UserWithoutEmailDto>(UserWithoutEmailDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
-        const result: UserWithoutEmailDto = mapper.transform(user, UserWithoutEmailDto);
+        const result: UserWithoutEmailDto = mapper.transform(user);
         expect(result).toEqual(userWithoutEmail);
         expect(result.fullName).toBe(`${user.name} ${user.lastName}`);
       });
       it('Map array', () => {
-        const mapper = new Mapper<User, UserWithoutEmailDto>();
+        const mapper = new Mapper<User, UserWithoutEmailDto>(UserWithoutEmailDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
-        const result: UserWithoutEmailDto[] = mapper.transform(
-          users,
-          UserWithoutEmailDto,
-        );
+        const result: UserWithoutEmailDto[] = mapper.transform(users);
         expect(result).toEqual(usersWithoutEmail);
         expect(result.length).toBe(2);
         expect(result[0].fullName).toBe(`${user.name} ${user.lastName}`);
@@ -255,7 +252,7 @@ describe('Mapper testing', () => {
     });
     describe('All properties', () => {
       it('Map object', () => {
-        const mapper = new Mapper<User, UserDto>();
+        const mapper = new Mapper<User, UserDto>(UserDto);
         mapper.context = {
           prefix: 'SR.',
         };
@@ -265,20 +262,20 @@ describe('Mapper testing', () => {
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const result: UserDto = mapper.transform(user, UserDto);
+        const result: UserDto = mapper.transform(user);
         // expect(result).toEqual(userDto);
         expect(result.fullName).toBe(`SR. ${user.name} ${user.lastName}`);
         expect(result.email).toBe(user.email);
       });
       it('Map array', () => {
-        const mapper = new Mapper<User, UserDto>();
+        const mapper = new Mapper<User, UserDto>(UserDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const result: UserDto[] = mapper.transform(users, UserDto);
+        const result: UserDto[] = mapper.transform(users);
         expect(result).toEqual(usersDto);
         expect(result.length).toBe(2);
         expect(result[0].email).toBe(user.email);
@@ -286,7 +283,7 @@ describe('Mapper testing', () => {
     });
     describe('Calculate properties', () => {
       it('Map object', () => {
-        const mapper = new Mapper<User, UserDtoWithUsername>();
+        const mapper = new Mapper<User, UserDtoWithUsername>(UserDtoWithUsername);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -296,13 +293,13 @@ describe('Mapper testing', () => {
         mapper.addMapping('username', ({ email }): string => {
           return (email ?? '').split('@')[0];
         });
-        const result: UserDtoWithUsername = mapper.transform(user, UserDtoWithUsername);
+        const result: UserDtoWithUsername = mapper.transform(user);
         expect(result).toEqual(userWithUsernameDto);
         expect(result.fullName).toBe(`${user.name} ${user.lastName}`);
         expect(result.username).toBe(user.email.split('@')[0]);
       });
       it('Map array', () => {
-        const mapper = new Mapper<User, UserDtoWithUsername>();
+        const mapper = new Mapper<User, UserDtoWithUsername>(UserDtoWithUsername);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -312,10 +309,7 @@ describe('Mapper testing', () => {
         mapper.addMapping('username', ({ email }): string => {
           return (email ?? '').split('@')[0];
         });
-        const result: UserDtoWithUsername[] = mapper.transform(
-          users,
-          UserDtoWithUsername,
-        );
+        const result: UserDtoWithUsername[] = mapper.transform(users);
         expect(result).toEqual(usersWithUsernameDto);
         expect(result.length).toBe(2);
         expect(result[0].username).toBe(user.email.split('@')[0]);
@@ -323,7 +317,7 @@ describe('Mapper testing', () => {
     });
     describe('Remove properties', () => {
       it('Map object', () => {
-        const mapper = new Mapper<User, UserDtoWithUsername>();
+        const mapper = new Mapper<User, UserDtoWithUsername>(UserDtoWithUsername);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -334,7 +328,7 @@ describe('Mapper testing', () => {
           return (email ?? '').split('@')[0];
         });
         mapper.removeMapping('email');
-        const result: UserDtoWithUsername = mapper.transform(user, UserDtoWithUsername);
+        const result: UserDtoWithUsername = mapper.transform(user);
         expect(result).toEqual({
           fullName: 'Andres Gutierrez',
           username: 'agutierrezt',
@@ -344,7 +338,7 @@ describe('Mapper testing', () => {
         expect(result.username).toBe(user.email.split('@')[0]);
       });
       it('Map array', () => {
-        const mapper = new Mapper<User, UserDtoWithUsername>();
+        const mapper = new Mapper<User, UserDtoWithUsername>(UserDtoWithUsername);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -354,10 +348,7 @@ describe('Mapper testing', () => {
         mapper.addMapping('username', ({ email }): string => {
           return (email ?? '').split('@')[0];
         });
-        const result: UserDtoWithUsername[] = mapper.transform(
-          users,
-          UserDtoWithUsername,
-        );
+        const result: UserDtoWithUsername[] = mapper.transform(users);
         expect(result).toEqual(usersWithUsernameDto);
         expect(result.length).toBe(2);
         expect(result[0].username).toBe(user.email.split('@')[0]);
@@ -368,7 +359,7 @@ describe('Mapper testing', () => {
   describe('Mapping with nesting object to nesting object', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -381,16 +372,13 @@ describe('Mapper testing', () => {
           };
         });
 
-        const result: UserWithAddressDto = mapper.transform(
-          userWithAddress,
-          UserWithAddressDto,
-        );
+        const result: UserWithAddressDto = mapper.transform(userWithAddress);
         expect(result).toEqual(userWithAddressDto);
         expect(result.address).toEqual(userWithAddressDto.address);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -403,10 +391,7 @@ describe('Mapper testing', () => {
           };
         });
 
-        const result: UserWithAddressDto[] = mapper.transform(
-          usersWithAddress,
-          UserWithAddressDto,
-        );
+        const result: UserWithAddressDto[] = mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressDto.address);
@@ -414,44 +399,38 @@ describe('Mapper testing', () => {
     });
     describe('Using sub mapper', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const mapperAddress = new Mapper<Address, AddressDto>();
+        const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
         mapperAddress.addMapping('address', ({ address, country, city }) => {
           return `${address}, ${city}, ${country}`;
         });
-        mapper.addMapper('address', 'address', AddressDto, mapperAddress);
-        const result: UserWithAddressDto = mapper.transform(
-          userWithAddress,
-          UserWithAddressDto,
-        );
+        mapper.addMapper('address', 'address', mapperAddress);
+        const result: UserWithAddressDto = mapper.transform(userWithAddress);
         expect(result).toEqual(userWithAddressDto);
         expect(result.address instanceof AddressDto).toBe(true);
         expect(result.address).toEqual(userWithAddressDto.address);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const mapperAddress = new Mapper<Address, AddressDto>();
+        const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
         mapperAddress.addMapping('address', ({ address, country, city }) => {
           return `${address}, ${city}, ${country}`;
         });
-        mapper.addMapper('address', 'address', AddressDto, mapperAddress);
-        const result: UserWithAddressDto[] = mapper.transform(
-          usersWithAddress,
-          UserWithAddressDto,
-        );
+        mapper.addMapper('address', 'address', mapperAddress);
+        const result: UserWithAddressDto[] = mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressDto.address);
@@ -462,7 +441,9 @@ describe('Mapper testing', () => {
   describe('Mapping with nesting object to primitive', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>(
+          UserWithAddressWithoutNestingDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -473,16 +454,16 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto = mapper.transform(
-          userWithAddress,
-          UserWithAddressWithoutNestingDto,
-        );
+        const result: UserWithAddressWithoutNestingDto =
+          mapper.transform(userWithAddress);
         expect(result).toEqual(userWithAddressTwoDto);
         expect(result.address).toEqual(userWithAddressTwoDto.address);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>(
+          UserWithAddressWithoutNestingDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -493,10 +474,8 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto[] = mapper.transform(
-          usersWithAddress,
-          UserWithAddressWithoutNestingDto,
-        );
+        const result: UserWithAddressWithoutNestingDto[] =
+          mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressTwoDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressTwoDto.address);
@@ -507,7 +486,9 @@ describe('Mapper testing', () => {
   describe('Mapping with array of nesting objects to array of nesting objects', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>();
+        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>(
+          UserWithAddressesDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -524,16 +505,15 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserWithAddressesDto = mapper.transform(
-          userWithAddresses,
-          UserWithAddressesDto,
-        );
+        const result: UserWithAddressesDto = mapper.transform(userWithAddresses);
         expect(result).toEqual(userWithAddressesDto);
         expect(result.addresses).toEqual(userWithAddressesDto.addresses);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>();
+        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>(
+          UserWithAddressesDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -550,10 +530,7 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserWithAddressesDto[] = mapper.transform(
-          usersWithAddresses,
-          UserWithAddressesDto,
-        );
+        const result: UserWithAddressesDto[] = mapper.transform(usersWithAddresses);
         expect(result).toEqual(usersWithAddressesDto);
         expect(result.length).toBe(1);
         expect(result[0].addresses).toEqual(userWithAddressesDto.addresses);
@@ -561,43 +538,41 @@ describe('Mapper testing', () => {
     });
     describe('Using sub mapper', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>();
+        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>(
+          UserWithAddressesDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const mapperAddress = new Mapper<Address, AddressDto>();
+        const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
         mapperAddress.addMapping('address', ({ address, country, city }) => {
           return `${address}, ${city}, ${country}`;
         });
-        mapper.addMapper('addresses', 'addresses', AddressDto, mapperAddress);
-        const result: UserWithAddressesDto = mapper.transform(
-          userWithAddresses,
-          UserWithAddressesDto,
-        );
+        mapper.addMapper('addresses', 'addresses', mapperAddress);
+        const result: UserWithAddressesDto = mapper.transform(userWithAddresses);
         expect(result).toEqual(userWithAddressesDto);
         expect(result.addresses).toEqual(userWithAddressesDto.addresses);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>();
+        const mapper = new Mapper<UserAddresses, UserWithAddressesDto>(
+          UserWithAddressesDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
         mapper.addMapping('email', ({ email }): string => {
           return email ?? '';
         });
-        const mapperAddress = new Mapper<Address, AddressDto>();
+        const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
         mapperAddress.addMapping('address', ({ address, country, city }) => {
           return `${address}, ${city}, ${country}`;
         });
-        mapper.addMapper('addresses', 'addresses', AddressDto, mapperAddress);
-        const result: UserWithAddressesDto[] = mapper.transform(
-          usersWithAddresses,
-          UserWithAddressesDto,
-        );
+        mapper.addMapper('addresses', 'addresses', mapperAddress);
+        const result: UserWithAddressesDto[] = mapper.transform(usersWithAddresses);
         expect(result).toEqual(usersWithAddressesDto);
         expect(result.length).toBe(1);
         expect(result[0].addresses).toEqual(userWithAddressesDto.addresses);
@@ -608,7 +583,9 @@ describe('Mapper testing', () => {
   describe('Mapping with array of nesting object to array of primitive', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserAddresses, UserWithAddressesWithoutNestingDto>();
+        const mapper = new Mapper<UserAddresses, UserWithAddressesWithoutNestingDto>(
+          UserWithAddressesWithoutNestingDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -623,16 +600,16 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserWithAddressesWithoutNestingDto = mapper.transform(
-          userWithAddresses,
-          UserWithAddressesWithoutNestingDto,
-        );
+        const result: UserWithAddressesWithoutNestingDto =
+          mapper.transform(userWithAddresses);
         expect(result).toEqual(userWithAddressesTwoDto);
         expect(result.addresses).toEqual(userWithAddressesTwoDto.addresses);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>();
+        const mapper = new Mapper<UserAddress, UserWithAddressWithoutNestingDto>(
+          UserWithAddressWithoutNestingDto,
+        );
         mapper.addMapping('fullName', ({ name, lastName }): string => {
           return `${name} ${lastName}`;
         });
@@ -643,10 +620,8 @@ describe('Mapper testing', () => {
           return `${address?.address}, ${address?.city}, ${address?.country}`;
         });
 
-        const result: UserWithAddressWithoutNestingDto[] = mapper.transform(
-          usersWithAddress,
-          UserWithAddressWithoutNestingDto,
-        );
+        const result: UserWithAddressWithoutNestingDto[] =
+          mapper.transform(usersWithAddress);
         expect(result).toEqual(usersWithAddressTwoDto);
         expect(result.length).toBe(1);
         expect(result[0].address).toEqual(userWithAddressTwoDto.address);
@@ -657,7 +632,7 @@ describe('Mapper testing', () => {
   describe('Mapping primitive to object', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserWithAddressDto, UserAddress>();
+        const mapper = new Mapper<UserWithAddressDto, UserAddress>(UserAddress);
         mapper.addMapping('name', ({ fullName }): string => {
           return (fullName ?? '').split(' ')[0];
         });
@@ -676,13 +651,13 @@ describe('Mapper testing', () => {
           };
         });
 
-        const result: UserAddress = mapper.transform(userWithAddressDto, UserAddress);
+        const result: UserAddress = mapper.transform(userWithAddressDto);
         expect(result).toEqual(userWithAddress);
         expect(result.address).toEqual(userWithAddress.address);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserWithAddressesDto, UserAddresses>();
+        const mapper = new Mapper<UserWithAddressesDto, UserAddresses>(UserAddresses);
         mapper.addMapping('name', ({ fullName }): string => {
           return (fullName ?? '').split(' ')[0];
         });
@@ -705,10 +680,7 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserAddresses[] = mapper.transform(
-          usersWithAddressesDto,
-          UserAddresses,
-        );
+        const result: UserAddresses[] = mapper.transform(usersWithAddressesDto);
         expect(result).toEqual(usersWithAddresses);
         expect(result.length).toBe(1);
         expect(result[0].addresses).toEqual(usersWithAddresses[0].addresses);
@@ -719,7 +691,9 @@ describe('Mapper testing', () => {
   describe('Mapping array of primitives to array of objects', () => {
     describe('Using functions', () => {
       it('Map object', () => {
-        const mapper = new Mapper<UserWithAddressesWithoutNestingDto, UserAddresses>();
+        const mapper = new Mapper<UserWithAddressesWithoutNestingDto, UserAddresses>(
+          UserAddresses,
+        );
         mapper.addMapping('name', ({ fullName }): string => {
           return (fullName ?? '').split(' ')[0];
         });
@@ -742,16 +716,15 @@ describe('Mapper testing', () => {
           );
         });
 
-        const result: UserAddresses = mapper.transform(
-          userWithAddressesTwoDto,
-          UserAddresses,
-        );
+        const result: UserAddresses = mapper.transform(userWithAddressesTwoDto);
         expect(result).toEqual(userWithAddresses);
         expect(result.addresses).toEqual(userWithAddresses.addresses);
       });
 
       it('Map array', () => {
-        const mapper = new Mapper<UserWithAddressesWithoutNestingDto, UserAddresses>();
+        const mapper = new Mapper<UserWithAddressesWithoutNestingDto, UserAddresses>(
+          UserAddresses,
+        );
         mapper.addMapping('name', ({ fullName }): string => {
           return (fullName ?? '').split(' ')[0];
         });
@@ -773,10 +746,7 @@ describe('Mapper testing', () => {
             }) ?? []
           );
         });
-        const result: UserAddresses[] = mapper.transform(
-          usersWithAddressesTwoDto,
-          UserAddresses,
-        );
+        const result: UserAddresses[] = mapper.transform(usersWithAddressesTwoDto);
         expect(result).toEqual(usersWithAddresses);
         expect(result.length).toBe(1);
         expect(result[0].addresses).toEqual(usersWithAddresses[0].addresses);
@@ -790,11 +760,11 @@ describe('Mapper testing', () => {
         id: 1,
         name: 'company 1',
       };
-      const mapper = new Mapper<Company, CompanyDto>();
+      const mapper = new Mapper<Company, CompanyDto>(CompanyDto);
       mapper.addMapping('name', ({ name }): string => {
         return name ?? '';
       });
-      const result = mapper.transform(data, CompanyDto);
+      const result = mapper.transform(data);
       expect(result instanceof CompanyDto).toBe(true);
       expect(result.capitalizedName()).toEqual('COMPANY 1');
     });
@@ -809,11 +779,11 @@ describe('Mapper testing', () => {
           name: 'company 2',
         },
       ];
-      const mapper = new Mapper<Company, CompanyDto>();
+      const mapper = new Mapper<Company, CompanyDto>(CompanyDto);
       mapper.addMapping('name', ({ name }): string => {
         return name ?? '';
       });
-      const result = mapper.transform(data, CompanyDto);
+      const result = mapper.transform(data);
       expect(result.length).toBe(2);
       expect(result[0] instanceof CompanyDto).toBe(true);
       expect(result[0].capitalizedName()).toEqual('COMPANY 1');
@@ -832,7 +802,7 @@ describe('Mapper testing', () => {
         lastName: 'Gutierrez',
         email: 'ag',
       };
-      const mapper = new Mapper<User, UserDto>();
+      const mapper = new Mapper<User, UserDto>(UserDto);
       mapper.addMapping('fullName', ({ name, lastName }): string => {
         return `${name} ${lastName}`;
       });
@@ -840,9 +810,9 @@ describe('Mapper testing', () => {
         return email ?? '';
       });
       try {
-        const result = mapper.transformAndValidate(data1, UserDto);
+        const result = mapper.transformAndValidate(data1);
         expect(result.fullName).toBe(`${data1.name} ${data1.lastName}`);
-        mapper.transformAndValidate(data, UserDto);
+        mapper.transformAndValidate(data);
       } catch (e: unknown) {
         expect((e as TransformationError).errors.length).toBe(1);
       }
@@ -860,7 +830,7 @@ describe('Mapper testing', () => {
           email: 'agutierrezt',
         },
       ];
-      const mapper = new Mapper<User, UserDto>();
+      const mapper = new Mapper<User, UserDto>(UserDto);
       mapper.addMapping('fullName', ({ name, lastName }): string => {
         return `${name} ${lastName}`;
       });
@@ -868,7 +838,7 @@ describe('Mapper testing', () => {
         return email ?? '';
       });
       try {
-        mapper.transformAndValidate(data, UserDto);
+        mapper.transformAndValidate(data);
       } catch (e: unknown) {
         expect((e as TransformationError).message).toBe(
           `The validation fail in the position 1`,
@@ -890,7 +860,7 @@ describe('Mapper testing', () => {
         email: 'agutierrezt@slabcode.com',
         address: address,
       };
-      const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+      const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
       mapper.context = {
         separator: '-',
       };
@@ -900,7 +870,7 @@ describe('Mapper testing', () => {
       mapper.addMapping('email', ({ email }): string => {
         return email ?? '';
       });
-      const mapperAddress = new Mapper<Address, AddressDto>();
+      const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
       mapperAddress.context = {
         addressSeparator: '-',
       };
@@ -908,10 +878,10 @@ describe('Mapper testing', () => {
         const separator = (ctx?.separator ?? '') + (ctx?.addressSeparator ?? '');
         return `${data.address}${separator}${data.city}${separator}${data.country}`;
       });
-      mapper.addMapper('address', 'address', AddressDto, mapperAddress);
+      mapper.addMapper('address', 'address', mapperAddress);
 
-      const result = mapper.transform(data, UserWithAddressDto);
-      const addressResult = mapperAddress.transform(address, AddressDto);
+      const result = mapper.transform(data);
+      const addressResult = mapperAddress.transform(address);
       expect(result.address.address).toBe('Calle falsa 123--Bogota--Colombia');
       expect(addressResult.address).toBe('Calle falsa 123-Bogota-Colombia');
     });
@@ -930,7 +900,7 @@ describe('Mapper testing', () => {
           address: address,
         },
       ];
-      const mapper = new Mapper<UserAddress, UserWithAddressDto>();
+      const mapper = new Mapper<UserAddress, UserWithAddressDto>(UserWithAddressDto);
       mapper.context = {
         separator: '-',
       };
@@ -940,7 +910,7 @@ describe('Mapper testing', () => {
       mapper.addMapping('email', ({ email }): string => {
         return email ?? '';
       });
-      const mapperAddress = new Mapper<Address, AddressDto>();
+      const mapperAddress = new Mapper<Address, AddressDto>(AddressDto);
       mapperAddress.context = {
         addressSeparator: '-',
       };
@@ -948,9 +918,9 @@ describe('Mapper testing', () => {
         const separator = (ctx?.separator ?? '') + (ctx?.addressSeparator ?? '');
         return `${data.address}${separator}${data.city}${separator}${data.country}`;
       });
-      mapper.addMapper('address', 'address', AddressDto, mapperAddress);
-      const result = mapper.transform(data, UserWithAddressDto);
-      const addressResult = mapperAddress.transform(address, AddressDto);
+      mapper.addMapper('address', 'address', mapperAddress);
+      const result = mapper.transform(data);
+      const addressResult = mapperAddress.transform(address);
       expect(result[0].address.address).toBe('Calle falsa 123--Bogota--Colombia');
       expect(addressResult.address).toBe('Calle falsa 123-Bogota-Colombia');
     });

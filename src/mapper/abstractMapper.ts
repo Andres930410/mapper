@@ -7,10 +7,12 @@ import { TransformationError } from '@/error/transformation.error';
 export abstract class AbstractMapper<TModel, TDto> {
   private readonly _translator: Translator<TModel, TDto>;
   private _context: Context;
+  private _clazz: ClassConstructor<TDto>;
 
-  constructor() {
+  constructor(type: ClassConstructor<TDto>) {
     this._translator = {} as Translator<TModel, TDto>;
     this._context = {};
+    this._clazz = type;
   }
 
   public get context(): Context {
@@ -24,7 +26,6 @@ export abstract class AbstractMapper<TModel, TDto> {
   public addMapper<Key extends string & keyof TModel, KeyDto extends string & keyof TDto>(
     key: KeyDto,
     keyModel: Key,
-    clazz: ClassConstructor<Flatten<PropType<TDto, KeyDto>>>,
     mapper: AbstractMapper<
       Flatten<PropType<TModel, Key>>,
       Flatten<PropType<TDto, KeyDto>>
@@ -32,7 +33,6 @@ export abstract class AbstractMapper<TModel, TDto> {
   ) {
     this._translator[key] = {
       key: keyModel,
-      clazz,
       mapper,
     };
   }
@@ -50,41 +50,34 @@ export abstract class AbstractMapper<TModel, TDto> {
     this._translator[key] = undefined;
   }
 
-  public transform(data: TModel, clazz: ClassConstructor<TDto>): TDto;
-  public transform(data: TModel[], clazz: ClassConstructor<TDto>): TDto[];
-  public transform(data: TModel | TModel[], clazz: ClassConstructor<TDto>): TDto | TDto[];
-  public transform(
-    data: TModel | TModel[],
-    clazz: ClassConstructor<TDto>,
-  ): TDto | TDto[] {
+  public transform(data: TModel): TDto;
+  public transform(data: TModel[]): TDto[];
+  public transform(data: TModel | TModel[]): TDto | TDto[];
+  public transform(data: TModel | TModel[]): TDto | TDto[] {
     if (Array.isArray(data)) {
-      return data.map((x) => plainToClass(clazz, this.transformItem(x)));
+      return data.map((x) => plainToClass(this._clazz, this.transformItem(x)));
     } else {
-      return plainToClass(clazz, this.transformItem(data));
+      return plainToClass(this._clazz, this.transformItem(data));
     }
   }
 
   public transformAndValidate(
     data: TModel,
-    clazz: ClassConstructor<TDto>,
     validatorOptions?: ValidatorOptions | undefined,
   ): TDto;
   public transformAndValidate(
     data: TModel[],
-    clazz: ClassConstructor<TDto>,
     validatorOptions?: ValidatorOptions | undefined,
   ): TDto[];
   public transformAndValidate(
     data: TModel | TModel[],
-    clazz: ClassConstructor<TDto>,
     validatorOptions?: ValidatorOptions | undefined,
   ): TDto | TDto[];
   public transformAndValidate(
     data: TModel | TModel[],
-    clazz: ClassConstructor<TDto>,
     validatorOptions?: ValidatorOptions | undefined,
   ): TDto | TDto[] {
-    const dataTransformed = this.transform(data, clazz);
+    const dataTransformed = this.transform(data);
     const dataToValidate = dataTransformed as object | object[];
     if (Array.isArray(dataToValidate)) {
       dataToValidate.forEach((x, i) => {
@@ -125,11 +118,7 @@ export abstract class AbstractMapper<TModel, TDto> {
           ...this.context,
           ...mapper.context,
         };
-        const clazz = translatorMapper.clazz as ClassConstructor<
-          PropType<TDto, keyof TDto>
-        >;
-        if (data[keyModel] !== undefined)
-          result[key] = mapper.transform(data[keyModel], clazz);
+        if (data[keyModel] !== undefined) result[key] = mapper.transform(data[keyModel]);
         mapper.context = originalContext;
       }
     });

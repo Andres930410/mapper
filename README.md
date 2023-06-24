@@ -26,7 +26,7 @@ $ npm install @agutierrezt9410/mapper
 In order to use the library you need to create a new mapper as follows:
 
 ```ts
-const mapper = new Mapper<FromModel, ToModel>();
+const mapper = new Mapper<FromModel, ToModel>(ToModel);
 ```
 
 If you are familiar with object oriented design you can use subclassing in order to create custom mappers which can be reused as follows:
@@ -34,7 +34,7 @@ If you are familiar with object oriented design you can use subclassing in order
 ```ts
 class MyCustomMapper extendes Mapper<FromModel, ToModel> {
     constructor() {
-        super();
+        super(ToModel);
     }
 }
 
@@ -62,12 +62,12 @@ mapper.addMapping("toModelProperty", ({ args1, args2 }, ctx): propertyType => {
   return value;
 });
 
-const otherMapper = new Mapper<FromOtherModel, ToOtherModel>();
+const otherMapper = new Mapper<FromOtherModel, ToOtherModel>(ToOtherModel);
 
 mapper.addMapping("toOtherModelProperty", ({ args1, args2 }): propertyType => {
   return value;
 });
-mapper.addMapper("toModelProper", "fromModelProperty", ToOtherModel, otherMapper);
+mapper.addMapper("toModelProperty", "fromModelProperty", otherMapper);
 ```
 
 It's important to also notice that when a submapper is configured then the context of the sub mapper will be combined with the context of its parent mapper in order to have better contextual information. However, when the mapper is used in isolation then its contextual information will be only the one defined by the mapper itself.
@@ -83,11 +83,19 @@ After your mapper is configured you can get the resulting object using the trans
 ```ts
 // For getting an object
 const data = {}; // Object type defined in mapper declaration
-const result = mapper.transform(data, ToModel);
+const result = mapper.transform(data);
 
 // For getting an array
 const data = []; // Array of object types defined in mapper declaration
-const result = mapper.transform(data, ToModel);
+const result = mapper.transform(data);
+
+// For getting an object and validate using class validator
+const data = {}; // Object type defined in mapper declaration
+const result = mapper.transformAndValidate(data);
+
+// For getting an array and validate using class validator
+const data = []; // Array of object types defined in mapper declaration
+const result = mapper.transformAndValidate(data);
 ```
 
 # Example
@@ -171,7 +179,7 @@ class UserAddressDto extends User {
 
 ### For Object
 ```ts
-const mapper = new Mapper<UserAddress, UserAddressDto>();
+const mapper = new Mapper<UserAddress, UserAddressDto>(UserAddressDto);
 
 mapper.addMapping("fullName", ({ name, lastName }): string => {
   return `${name} ${lastName}`;
@@ -180,13 +188,13 @@ mapper.addMapping("email", ({ email }): string => {
   return email ?? "";
 });
 
-const addressMapper = new Mapper<Address ,AddressDto>();
+const addressMapper = new Mapper<Address, AddressDto>(AddressDto);
 
 addressMapper.addMapping("text", ({ address, city, country }): string => {
   return `${address}, ${city}, ${country}`;
 });
 
-mapper.addMapper("addresses", "addresses", AddressDto, addressMapper);
+mapper.addMapper("addresses", "addresses", addressMapper);
 //  You can also do it this way:
 //  mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //    return (addresses ?? []).map(x => {
@@ -198,7 +206,7 @@ mapper.addMapper("addresses", "addresses", AddressDto, addressMapper);
 
 // This function will create a new object using the transformation logic
 // The resulting object will be an instance of UserAddressDto
-const result = mapper.transform(data, UserAddressDto);
+const result = mapper.transform(data);
 
 console.log(result);
 //  Console log output:
@@ -212,12 +220,12 @@ console.log(result);
 //  }
 
 // This function will not only create a new object based on the transformation logic but also check if the properties satisfy the validations. For instance if the email property is not a valid email, the function will generate an exception.
-const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
+const resultValidated = mapper.transformAndValidate(data);
 ```
 
 ### For Array
 ```ts
-const mapper = new Mapper<UserAddress, UserAddressDto>();
+const mapper = new Mapper<UserAddress, UserAddressDto>(UserAddressDto);
 
 mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
@@ -231,7 +239,7 @@ const addressMapper = new Mapper<Address ,AddressDto>();
 addressMapper.addMapping("text", ({address,city,country}): string => {
   return `${address}, ${city}, ${country}`
 });
-addressMapper.addMapper("addresses","addresses",addressMapper);
+mapper.addMapper("addresses","addresses",addressMapper);
 // You can also do it this way:
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
 //   return (addresses ?? []).map(x => {
@@ -257,17 +265,18 @@ console.log(result);
 //  ]
 
 // The validate function can be used also with an array, if any object of the objects present in the array doesn't satisfy the validations, then the method will generate an exception and indicate the position of the first object which doesn't satisfy the validations.
-const resultValidated = mapper.transformAndValidate(data,UserAddressDto);
+const resultValidated = mapper.transformAndValidate(data);
 ```
 
 # Changelog
 - 0.0.1: Initial version
 - 0.0.2: Reusable mapper, type safety for return type on the transform function and remove mapping.
-- 1.0.0: Now the mapper uses class transformer and class validator for validations and to guarantee that class types are returned instead of plain JavaScript objects.
+- 1.0.1: Now the mapper uses class transformer and class validator for validations and to guarantee that class types are returned instead of plain JavaScript objects.
     - Added:
         - Context can be added to the mappers, the context will be passed to each transformation function and it could be used for adding custom logic into the mappings.
         - Use class transformer for returning an specific class type instead of a plain javascript object.
         - New method for not only transforming but also validating if the information satisfies with some validation, this feature uses class validator.
+- 1.0.2: The type is passed on the constructor instead of in the transform method and in the add mapper method.
 
 # Acknowledgments
 I would like to thanks Trammel May. After a small discussion he pointed to me some problems that my library could have, those problems were addressed and solved.
