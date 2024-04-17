@@ -277,6 +277,7 @@ const resultValidated = mapper.transformAndValidate(data);
         - Use class transformer for returning an specific class type instead of a plain javascript object.
         - New method for not only transforming but also validating if the information satisfies with some validation, this feature uses class validator.
 - 1.0.2: The type is passed on the constructor instead of in the transform method and in the add mapper method.
+- 1.0.3: Now the constructor receives two types, one for the model and other for the dto, with this small change now the getters from the model are recognized.
 
 # Acknowledgments
 I would like to thanks Trammel May. After a small discussion he pointed to me some problems that my library could have, those problems were addressed and solved.

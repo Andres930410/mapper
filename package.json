@@ -1,6 +1,6 @@
 {
   "name": "@agutierrezt9410/mapper",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A project to transform models to DTOs and vice versa using functions and generics",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

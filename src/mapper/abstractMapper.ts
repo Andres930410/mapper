@@ -8,11 +8,13 @@ export abstract class AbstractMapper<TModel, TDto> {
   private readonly _translator: Translator<TModel, TDto>;
   private _context: Context;
   private _clazz: ClassConstructor<TDto>;
+  private _clazzModel: ClassConstructor<TModel>;
 
-  constructor(type: ClassConstructor<TDto>) {
+  constructor(typeModel: ClassConstructor<TModel>, type: ClassConstructor<TDto>) {
     this._translator = {} as Translator<TModel, TDto>;
     this._context = {};
     this._clazz = type;
+    this._clazzModel = typeModel;
   }
 
   public get context(): Context {
@@ -55,9 +57,14 @@ export abstract class AbstractMapper<TModel, TDto> {
   public transform(data: TModel | TModel[]): TDto | TDto[];
   public transform(data: TModel | TModel[]): TDto | TDto[] {
     if (Array.isArray(data)) {
-      return data.map((x) => plainToClass(this._clazz, this.transformItem(x)));
+      return data.map((x) =>
+        plainToClass(this._clazz, this.transformItem(plainToClass(this._clazzModel, x))),
+      );
     } else {
-      return plainToClass(this._clazz, this.transformItem(data));
+      return plainToClass(
+        this._clazz,
+        this.transformItem(plainToClass(this._clazzModel, data)),
+      );
     }
   }
 
@@ -101,9 +108,7 @@ export abstract class AbstractMapper<TModel, TDto> {
       if (!this._translator[key]) return;
       if (typeof this._translator[key]?.mapper === 'function') {
         result[key] = (this._translator[key]?.mapper as Function)(
-          {
-            ...data,
-          },
+          data,
           this.context,
         ) as PropType<TDto, keyof TDto>;
       } else {
