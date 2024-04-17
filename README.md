@@ -26,7 +26,7 @@ $ npm install @agutierrezt9410/mapper
 In order to use the library you need to create a new mapper as follows:
 
 ```ts
-const mapper = new Mapper<FromModel, ToModel>(ToModel);
+const mapper = new Mapper<FromModel, ToModel>(FromModel,ToModel);
 ```
 
 If you are familiar with object oriented design you can use subclassing in order to create custom mappers which can be reused as follows:
@@ -34,7 +34,7 @@ If you are familiar with object oriented design you can use subclassing in order
 ```ts
 class MyCustomMapper extendes Mapper<FromModel, ToModel> {
     constructor() {
-        super(ToModel);
+        super(FromModel,ToModel);
     }
 }
 
@@ -62,7 +62,7 @@ mapper.addMapping("toModelProperty", ({ args1, args2 }, ctx): propertyType => {
   return value;
 });
 
-const otherMapper = new Mapper<FromOtherModel, ToOtherModel>(ToOtherModel);
+const otherMapper = new Mapper<FromOtherModel, ToOtherModel>(FromOtherModel,ToOtherModel);
 
 mapper.addMapping("toOtherModelProperty", ({ args1, args2 }): propertyType => {
   return value;
@@ -188,7 +188,7 @@ mapper.addMapping("email", ({ email }): string => {
   return email ?? "";
 });
 
-const addressMapper = new Mapper<Address, AddressDto>(AddressDto);
+const addressMapper = new Mapper<Address, AddressDto>(Address,AddressDto);
 
 addressMapper.addMapping("text", ({ address, city, country }): string => {
   return `${address}, ${city}, ${country}`;
@@ -225,7 +225,7 @@ const resultValidated = mapper.transformAndValidate(data);
 
 ### For Array
 ```ts
-const mapper = new Mapper<UserAddress, UserAddressDto>(UserAddressDto);
+const mapper = new Mapper<UserAddress, UserAddressDto>(UserAddress,UserAddressDto);
 
 mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
@@ -278,6 +278,7 @@ const resultValidated = mapper.transformAndValidate(data);
         - New method for not only transforming but also validating if the information satisfies with some validation, this feature uses class validator.
 - 1.0.2: The type is passed on the constructor instead of in the transform method and in the add mapper method.
 - 1.0.3: Now the constructor receives two types, one for the model and other for the dto, with this small change now the getters from the model are recognized.
+- 1.0.4: Update README.
 
 # Acknowledgments
 I would like to thanks Trammel May. After a small discussion he pointed to me some problems that my library could have, those problems were addressed and solved.
