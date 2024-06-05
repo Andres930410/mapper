@@ -185,7 +185,7 @@ mapper.addMapping("fullName", ({ name, lastName }): string => {
   return `${name} ${lastName}`;
 });
 mapper.addMapping("email", ({ email }): string => {
-  return email ?? "";
+  return email;
 });
 
 const addressMapper = new Mapper<Address, AddressDto>(Address,AddressDto);
@@ -197,7 +197,7 @@ addressMapper.addMapping("text", ({ address, city, country }): string => {
 mapper.addMapper("addresses", "addresses", addressMapper);
 //  You can also do it this way:
 //  mapper.addMapping("addresses", ({addresses}): AddressDto => {
-//    return (addresses ?? []).map(x => {
+//    return addresses.map(x => {
 //      return {
 //        text: `${x.address}, ${x.city}, ${x.country}`;
 //      }
@@ -231,7 +231,7 @@ mapper.addMapping("fullName", ({name, lastName}): string => {
   return `${name} ${lastName}`
 });
 mapper.addMapping("email", ({email}): string => {
-  return email ?? ""
+  return email
 });
 
 const addressMapper = new Mapper<Address ,AddressDto>();
@@ -242,7 +242,7 @@ addressMapper.addMapping("text", ({address,city,country}): string => {
 mapper.addMapper("addresses","addresses",addressMapper);
 // You can also do it this way:
 // mapper.addMapping("addresses", ({addresses}): AddressDto => {
-//   return (addresses ?? []).map(x => {
+//   return (addresses).map(x => {
 //     return {
 //       text: `${x.address}, ${x.city}, ${x.country}`
 //     }
@@ -279,6 +279,8 @@ const resultValidated = mapper.transformAndValidate(data);
 - 1.0.2: The type is passed on the constructor instead of in the transform method and in the add mapper method.
 - 1.0.3: Now the constructor receives two types, one for the model and other for the dto, with this small change now the getters from the model are recognized.
 - 1.0.4: Update README.
+- 1.0.6: Fixes on the add mapping function, now the data arrives with the right type instead of being "type | undefined"
+
 
 # Acknowledgments
 I would like to thanks Trammel May. After a small discussion he pointed to me some problems that my library could have, those problems were addressed and solved.

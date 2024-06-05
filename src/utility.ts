@@ -10,7 +10,7 @@ export type TranslatorMapper<TModel> = {
 };
 
 export type TranslatorFunction<TModel, TDto, TKey extends string & keyof TDto> = {
-  mapper: (data: Partial<TModel>) => PropType<TDto, TKey> | PropType<TDto, TKey>[];
+  mapper: (data: TModel) => PropType<TDto, TKey> | PropType<TDto, TKey>[];
 };
 
 export type Context = {

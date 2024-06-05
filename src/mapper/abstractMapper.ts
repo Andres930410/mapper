@@ -41,7 +41,7 @@ export abstract class AbstractMapper<TModel, TDto> {
 
   public addMapping<Key extends string & keyof TDto>(
     key: Key,
-    transform: (data: Partial<TModel>, ctx?: Context) => PropType<TDto, Key>,
+    transform: (data: TModel, ctx?: Context) => PropType<TDto, Key>,
   ) {
     this._translator[key] = {
       mapper: transform,
